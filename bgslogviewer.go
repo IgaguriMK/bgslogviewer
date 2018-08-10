@@ -1,7 +1,26 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/IgaguriMK/bgslogviewer/api"
+)
 
 func main() {
-	fmt.Println("vim-go")
+
+	f, err := os.Open("sol.json")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer f.Close()
+
+	var v api.FactionsStatus
+	err = json.NewDecoder(f).Decode(&v)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Printf("%v\n", v)
 }

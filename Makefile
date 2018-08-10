@@ -1,4 +1,4 @@
-GOLINT_OPTS=-min_confidence 0.8 -set_exit_status
+GOLINT_OPTS=-min_confidence 1.0 -set_exit_status
 
 
 .PHONY: all
