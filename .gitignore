@@ -1,2 +1,6 @@
 *.exe
 tasks
+
+*.log
+
+/vendor
