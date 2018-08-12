@@ -1,22 +1,21 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"html/template"
+	"io"
 	"log"
-	"os"
 	"time"
 
+	"github.com/IgaguriMK/bgslogviewer/apiCaller"
 	"github.com/gin-gonic/gin"
-
-	"github.com/IgaguriMK/bgslogviewer/api"
-	"github.com/IgaguriMK/bgslogviewer/model"
 )
 
 const (
 	timeFormat = "2006-01-02 (15)"
 )
 
+var mainTemplate *template.Template
 var statTemplate *template.Template
 
 func init() {
@@ -31,7 +30,8 @@ func init() {
 func main() {
 	r := gin.Default()
 
-	r.GET("/", statPage)
+	r.GET("/", mainPage)
+	r.GET("/system", statPage)
 
 	err := r.Run(":8080")
 	if err != nil {
@@ -39,31 +39,47 @@ func main() {
 	}
 }
 
+func mainPage(c *gin.Context) {
+	c.File("static/main.html")
+}
+
 func statPage(c *gin.Context) {
-	f, err := os.Open("sol.json")
-	if err != nil {
-		c.String(500, "External API error")
-		log.Println("[ERROR] loading data error: ", err)
-		return
-	}
-	defer f.Close()
+	systemName := c.Query("q")
 
-	var res api.SystemFactions
-	err = json.NewDecoder(f).Decode(&res)
-	if err != nil {
-		c.String(500, "External API error")
-		log.Println("[ERROR] loading data error: ", err)
+	if systemName == "" {
+		c.String(404, "Invalid query")
 		return
 	}
 
-	v := model.FromApiResult(res)
+	v, stat, err := apiCaller.FetchFactions(systemName)
+	if err != nil {
+		c.String(500, "Internal error")
+		log.Println("[ERROR] fetching data error: ", err)
+		return
+	}
+
+	if stat == apiCaller.Invalid {
+		c.String(404, "Invalid request")
+		return
+	}
+
 	v.GenStr(time.UTC, timeFormat)
 
-	err = statTemplate.Execute(c.Writer, v)
+	body := new(bytes.Buffer)
+
+	err = statTemplate.Execute(body, v)
 	if err != nil {
+		c.String(500, "Internal error")
 		log.Fatal("[FATAL] Execute template: ", err)
 		return
 	}
 
 	c.Status(200)
+
+	c.Header("Cache-Control", "max-age=600, s-maxage=600")
+
+	_, err = io.Copy(c.Writer, body)
+	if err != nil {
+		log.Println("[INFO] error while sending data: ", err)
+	}
 }
