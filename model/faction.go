@@ -72,8 +72,8 @@ func factionFromApi(apiFaction api.Faction) Faction {
 		Date:       apiFaction.LastUpdate,
 		Influence:  apiFaction.Influence,
 		Current:    apiFaction.State,
-		Pending:    apiFaction.PendingStates,
-		Recovering: apiFaction.RecoveringStates,
+		Pending:    fromApiStateSlice(apiFaction.PendingStates),
+		Recovering: fromApiStateSlice(apiFaction.RecoveringStates),
 	}
 
 	history := make(map[int64]*States)
@@ -116,12 +116,12 @@ func factionFromApi(apiFaction api.Faction) Faction {
 		if !ok {
 			history[d] = &States{
 				Date:    d,
-				Pending: st,
+				Pending: fromApiStateSlice(st),
 			}
 			continue
 		}
 
-		h.Pending = st
+		h.Pending = fromApiStateSlice(st)
 	}
 
 	for ds, st := range apiFaction.RecoveringStatesHistory {
@@ -131,12 +131,12 @@ func factionFromApi(apiFaction api.Faction) Faction {
 		if !ok {
 			history[d] = &States{
 				Date:       d,
-				Recovering: st,
+				Recovering: fromApiStateSlice(st),
 			}
 			continue
 		}
 
-		h.Recovering = st
+		h.Recovering = fromApiStateSlice(st)
 	}
 
 	ds := make([]int64, 0, len(history))
@@ -173,13 +173,13 @@ func (f *Faction) GenStr(loc *time.Location, fmtStr string) {
 }
 
 type States struct {
-	Date         int64       `json:"date"`
-	DateStr      string      `json:"-"`
-	Influence    float64     `json:"influence"`
-	InfluenceStr string      `json:"-"`
-	Current      string      `json:"current"`
-	Pending      []api.State `json:"pending"`
-	Recovering   []api.State `json:"recovering"`
+	Date         int64   `json:"date"`
+	DateStr      string  `json:"-"`
+	Influence    float64 `json:"influence"`
+	InfluenceStr string  `json:"-"`
+	Current      string  `json:"current"`
+	Pending      []State `json:"pending"`
+	Recovering   []State `json:"recovering"`
 }
 
 func (s *States) GenStr(loc *time.Location, fmtStr string) {
@@ -189,5 +189,50 @@ func (s *States) GenStr(loc *time.Location, fmtStr string) {
 		s.InfluenceStr = fmt.Sprintf("%.1f", s.Influence*100)
 	} else {
 		s.InfluenceStr = ""
+	}
+
+	genStateSliceStr(s.Pending)
+	genStateSliceStr(s.Recovering)
+}
+
+type State struct {
+	State    string `json:"state"`
+	Trend    int64  `json:"trend"`
+	TrendStr string `json:"-"`
+}
+
+func fromApiStateSlice(ss []api.State) []State {
+	rss := make([]State, 0, len(ss))
+
+	for _, s := range ss {
+		rss = append(
+			rss,
+			State{
+				State: s.State,
+				Trend: s.Trend,
+			},
+		)
+	}
+
+	return rss
+}
+
+func genStateSliceStr(ss []State) {
+	for i := 0; i < len(ss); i++ {
+		ss[i].GenStr()
+	}
+}
+
+func (s *State) GenStr() {
+	switch s.Trend {
+	case -1:
+		s.TrendStr = "↓"
+	case 0:
+		s.TrendStr = "→"
+	case 1:
+		s.TrendStr = "↑"
+	default:
+		log.Printf("[WARNING] Unknown trend %d", s.Trend)
+		s.TrendStr = "?"
 	}
 }

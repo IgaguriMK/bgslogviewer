@@ -16,8 +16,8 @@
 		{{with .NewestStates}}
 			<td>{{.InfluenceStr}}</td>
 			<td>{{.Current}}</td>
-			<td>{{range .Recovering}}{{.State}} {{end}} </td>
-			<td>{{range .Pending}}{{.State}} {{end}} </td>
+			<td>{{range .Recovering}}{{.State}}{{.TrendStr}} {{end}} </td>
+			<td>{{range .Pending}}{{.State}}{{.TrendStr}} {{end}} </td>
 			<td>{{.DateStr}}</td>
 		{{end}}
 	</tr>
@@ -36,8 +36,8 @@
 		<td>{{.DateStr}}</td>
 		<td>{{.InfluenceStr}}</td>
 		<td>{{.Current}}</td>
-		<td>{{range .Recovering}}{{.State}} {{end}} </td>
-		<td>{{range .Pending}}{{.State}} {{end}} </td>
+		<td>{{range .Recovering}}{{.State}}{{.TrendStr}} {{end}} </td>
+		<td>{{range .Pending}}{{.State}}{{.TrendStr}} {{end}} </td>
 	</tr>
 {{end}}
 </table>
