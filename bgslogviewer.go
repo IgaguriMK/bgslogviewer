@@ -21,7 +21,17 @@ var statTemplate *template.Template
 func init() {
 	var err error
 
-	statTemplate, err = template.ParseFiles("template/systemstats.html.tpl")
+	funcs := template.FuncMap{
+		"oddEven": func(n int) string {
+			if (n+1)%2 == 0 {
+				return "even"
+			} else {
+				return "odd"
+			}
+		},
+	}
+
+	statTemplate, err = template.New("systemstats.html.tpl").Funcs(funcs).ParseFiles("template/systemstats.html.tpl")
 	if err != nil {
 		log.Fatal("[FATAL] Failed parse template: ", err)
 	}
