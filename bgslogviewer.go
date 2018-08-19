@@ -2,17 +2,27 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"time"
 
-	"github.com/IgaguriMK/bgslogviewer/apiCaller"
 	"github.com/gin-gonic/gin"
+
+	"github.com/IgaguriMK/bgslogviewer/apiCaller"
+	"github.com/IgaguriMK/bgslogviewer/config"
 )
 
 const (
 	timeFormat = "2006-01-02 (15)"
+)
+
+const (
+	cacheLocalMin = 120 * time.Second
+	cacheLocalMax = 60 * time.Minute
+	cacheCdnMin   = 5 * time.Minute
+	cacheCdnMax   = 6 * time.Hour
 )
 
 var mainTemplate *template.Template
@@ -50,11 +60,15 @@ func main() {
 }
 
 func mainPage(c *gin.Context) {
+	commonHeader(c)
+
 	c.File("static/main.html")
 }
 
 func statPage(c *gin.Context) {
 	systemName := c.Query("q")
+
+	commonHeader(c)
 
 	if systemName == "" {
 		c.String(404, "Invalid query")
@@ -86,10 +100,58 @@ func statPage(c *gin.Context) {
 
 	c.Status(200)
 
-	c.Header("Cache-Control", "max-age=600, s-maxage=600")
+	ll, cl := cachesLen()
+	c.Header("Cache-Control", fmt.Sprintf("max-age=%d, s-maxage=%d", ll, cl))
 
 	_, err = io.Copy(c.Writer, body)
 	if err != nil {
 		log.Println("[INFO] error while sending data: ", err)
 	}
+}
+
+func commonHeader(c *gin.Context) {
+	c.Header("X-XSS=Protection", "1; mode=block")
+	c.Header("X-Frame-Options", "DENY")
+	c.Header("X-Content-Type-Options", "nosniff")
+	c.Header("Content-Security-Policy", "default-src 'self'")
+}
+
+func cachesLen() (localCache int, cdnCache int) {
+	now := time.Now()
+
+	nextUpdate := time.Date(
+		now.Year(),
+		now.Month(),
+		now.Day(),
+		config.BgsUpdate,
+		0,
+		0,
+		0,
+		time.UTC,
+	)
+
+	if nextUpdate.Before(now) {
+		nextUpdate = nextUpdate.Add(24 * time.Hour)
+	}
+
+	prevUpdate := nextUpdate.Add(-24 * time.Hour)
+
+	// 直前のBGS更新から近いときは最短キャッシュ
+	if now.Add(-3 * time.Hour).Before(prevUpdate) {
+		return int(cacheLocalMin.Seconds()), int(cacheCdnMin.Seconds())
+	}
+
+	// 次のBGS更新まで間近
+	if now.Add(time.Hour).After(nextUpdate) {
+		return int(cacheLocalMin.Seconds()), int(cacheCdnMin.Seconds())
+	}
+
+	// BGS更新付近ではないが、最大キャッシュでは長すぎる
+	if now.Add(cacheCdnMax + cacheCdnMin + time.Hour).After(nextUpdate) {
+		d := nextUpdate.Sub(now) - time.Hour
+		return int(d.Seconds()), int(d.Seconds())
+	}
+
+	// 次のBGS更新まで余裕がある
+	return int(cacheLocalMax.Seconds()), int(cacheCdnMax.Seconds())
 }

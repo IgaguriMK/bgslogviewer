@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/IgaguriMK/bgslogviewer/api"
 	"github.com/IgaguriMK/bgslogviewer/model"
@@ -32,7 +33,9 @@ func FetchFactions(systemName string) (model.Factions, ApiStatus, error) {
 		return zeroFactions, stat, nil
 	}
 
-	return model.FromApiResult(res), Success, nil
+	m := model.FromApiResult(res)
+	m.FetchedAt = time.Now()
+	return m, Success, nil
 }
 
 func fetchFromEDSM(systemName string) (api.SystemFactions, ApiStatus, error) {

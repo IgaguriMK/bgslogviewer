@@ -15,6 +15,7 @@ type Factions struct {
 	Factions           []Faction          `json:"factions"`
 	ID                 int64              `json:"id"`
 	Name               string             `json:"name"`
+	FetchedAt          time.Time          `json:"fetchedAt"`
 }
 
 type ControllingFaction struct {
