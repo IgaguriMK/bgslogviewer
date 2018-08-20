@@ -35,7 +35,7 @@ docker-build: build-linux
 
 .PHONY: docker-run
 docker-run:
-	docker run -it --rm -p 8080:8080 $(IMAGENAME)
+	docker-compose up
 
 
 .PHONY: clean
