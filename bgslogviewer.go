@@ -51,6 +51,7 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/", mainPage)
+	r.GET("/index.html", mainPage)
 	r.GET("/system", statPage)
 
 	err := r.Run(":8080")
@@ -62,6 +63,7 @@ func main() {
 func mainPage(c *gin.Context) {
 	commonHeader(c)
 
+	c.Status(200)
 	c.File("static/main.html")
 }
 
