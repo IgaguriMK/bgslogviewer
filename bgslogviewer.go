@@ -68,7 +68,11 @@ func mainPage(c *gin.Context) {
 }
 
 func statPage(c *gin.Context) {
-	systemName := c.Query("q")
+	systemName, ok := c.GetQuery("q")
+	if !ok {
+		c.String(400, "Invalid Url")
+		return
+	}
 
 	commonHeader(c)
 
