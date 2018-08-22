@@ -31,7 +31,7 @@ dr: docker-build docker-run
 
 .PHONY: docker-build
 docker-build: build-linux
-	docker build -t $(IMAGENAME) .
+	docker build --no-cache -t $(IMAGENAME) .
 
 .PHONY: docker-run
 docker-run:
