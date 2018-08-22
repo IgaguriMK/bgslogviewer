@@ -12,6 +12,7 @@ import (
 
 	"github.com/IgaguriMK/bgslogviewer/apiCaller"
 	"github.com/IgaguriMK/bgslogviewer/config"
+	"github.com/IgaguriMK/bgslogviewer/prof"
 )
 
 const (
@@ -68,38 +69,50 @@ func mainPage(c *gin.Context) {
 }
 
 func statPage(c *gin.Context) {
+	pf := prof.NewProfiler()
+	pf.Start("validation")
+
 	systemName, ok := c.GetQuery("q")
 	if !ok {
 		c.String(400, "Invalid Url")
 		return
 	}
 
+	pf.AddParam("q", systemName)
+
 	commonHeader(c)
 
 	if systemName == "" {
 		c.String(404, "Invalid query")
+		pf.End(404)
 		return
 	}
 
+	pf.Mark("fetchAPI")
 	v, stat, err := apiCaller.FetchFactions(systemName)
 	if err != nil {
 		c.String(500, "Internal error")
+		pf.End(500)
 		log.Println("[ERROR] fetching data error: ", err)
 		return
 	}
 
 	if stat == apiCaller.Invalid {
 		c.String(404, "Invalid request")
+		pf.End(404)
 		return
 	}
 
+	pf.Mark("genStr")
 	v.GenStr(time.UTC, timeFormat)
 
+	pf.Mark("template")
 	body := new(bytes.Buffer)
 
 	err = statTemplate.Execute(body, v)
 	if err != nil {
 		c.String(500, "Internal error")
+		pf.End(500)
 		log.Fatal("[FATAL] Execute template: ", err)
 		return
 	}
@@ -109,10 +122,14 @@ func statPage(c *gin.Context) {
 	ll, cl := cachesLen()
 	c.Header("Cache-Control", fmt.Sprintf("max-age=%d, s-maxage=%d", ll, cl))
 
+	pf.Mark("send")
 	_, err = io.Copy(c.Writer, body)
 	if err != nil {
+		pf.End(-1)
 		log.Println("[INFO] error while sending data: ", err)
 	}
+
+	pf.End(200)
 }
 
 func commonHeader(c *gin.Context) {
