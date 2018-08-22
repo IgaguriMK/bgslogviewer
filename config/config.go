@@ -7,6 +7,8 @@ import (
 
 var BgsUpdate = 16
 var EnableProf = false
+var RedisHost = "redis"
+var RedisPort = 6379
 
 func init() {
 	if upd, ok := getEnvInt("BLV_BGS_UPDATE"); ok {
@@ -15,6 +17,14 @@ func init() {
 
 	if pf, ok := getEnvBool("BLV_PROFILE"); ok {
 		EnableProf = pf
+	}
+
+	if h, ok := os.LookupEnv("REDIS_HOST"); ok {
+		RedisHost = h
+	}
+
+	if p, ok := getEnvInt("REDIS_PORT"); ok {
+		RedisPort = p
 	}
 }
 
