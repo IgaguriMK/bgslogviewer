@@ -1,6 +1,10 @@
-*.exe
-tasks
 
+# binary
+*.exe
+bgslogviewer
+
+# testrun artifacts
 *.log
 
+# dep
 /vendor
