@@ -1,16 +1,17 @@
-GOLINT_OPTS=-min_confidence 1.0 -set_exit_status
+GOLINT_OPTS := -min_confidence 1.0 -set_exit_status
 
-VERSION=0.1.1
-IMAGENAME=bgslogviewer:$(VERSION)
+VERSION   := $(shell cat .version)
+IMAGENAME := bgslogviewer:$(VERSION)
 
 .PHONY: all
-all: dep build lint
+all: clean dep build lint docker-build
 
 .PHONY: b
 b: build lint
 
 .PHONY: build
 build:
+	echo $(IMAGENAME)
 	go build bgslogviewer.go
 
 .PHONY: build-linux
