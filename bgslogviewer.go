@@ -36,9 +36,8 @@ func init() {
 		"oddEven": func(n int) string {
 			if (n+1)%2 == 0 {
 				return "even"
-			} else {
-				return "odd"
 			}
+			return "odd"
 		},
 	}
 
