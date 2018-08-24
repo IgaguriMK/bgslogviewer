@@ -5,12 +5,18 @@ import (
 	"strconv"
 )
 
+var Debug = false
 var BgsUpdate = 16
 var EnableProf = false
 var RedisHost = "redis"
 var RedisPort = 6379
 
 func init() {
+
+	if d, ok := getEnvBool("BLV_DEBUG"); ok {
+		Debug = d
+	}
+
 	if upd, ok := getEnvInt("BLV_BGS_UPDATE"); ok {
 		BgsUpdate = upd
 	}

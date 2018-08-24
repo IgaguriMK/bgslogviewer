@@ -1,6 +1,7 @@
 <html>
 <header>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="/static/css/system.css">
 <title>{{.Name}} -- BGS Log Viewer</title>
 </header>
 <body>

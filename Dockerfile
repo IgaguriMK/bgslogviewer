@@ -5,6 +5,7 @@ RUN apk add --no-cache ca-certificates
 
 COPY bgslogviewer app/
 COPY template app/template/
+COPY main.html app/
 COPY static app/static/
 
 # Windowsでビルドした時用に、パーミッションを設定

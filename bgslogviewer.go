@@ -50,21 +50,16 @@ func init() {
 func main() {
 	r := gin.Default()
 
-	r.GET("/", mainPage)
-	r.GET("/index.html", mainPage)
+	r.StaticFile("/", "main.html")
+	r.StaticFile("/index.html", "main.html")
 	r.GET("/system", statPage)
+
+	r.Static("/static", "./static")
 
 	err := r.Run(":8080")
 	if err != nil {
 		log.Fatal("[FATAL] Can't execute gin server: ", err)
 	}
-}
-
-func mainPage(c *gin.Context) {
-	commonHeader(c)
-
-	c.Status(200)
-	c.File("static/main.html")
 }
 
 func statPage(c *gin.Context) {
