@@ -96,7 +96,12 @@ func statPage(c *gin.Context) {
 		return
 	}
 
-	if stat == apiCaller.Invalid {
+	switch stat {
+	case apiCaller.Timeout:
+		c.String(503, "Too many access")
+		pf.End(503)
+		return
+	case apiCaller.Invalid:
 		c.String(404, "Invalid request")
 		pf.End(404)
 		return
