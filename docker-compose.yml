@@ -5,7 +5,7 @@ bgslogviewer:
   links:
     - redis
   environment:
-    BLV_PROFILE: "true"
+    BLV_PROFILE: "false"
     REDIS_HOST: "redis"
     REDIS_PORT: "6379"
 redis:

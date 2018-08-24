@@ -23,6 +23,7 @@ const (
 	Success ApiStatus = iota
 	Invalid
 	Error
+	Timeout
 )
 
 const (
@@ -31,13 +32,29 @@ const (
 	cacheInvalid = 15 * time.Minute
 )
 
+const (
+	apiThrottleBucket = 5
+	apiInterval       = 6 * time.Second
+	apiTimeout        = 25 * time.Second // 30秒タイムアウトに余裕分を加味
+)
+
 var redisClient *redis.Client
+var throttleCh chan bool
 
 func init() {
 	redisClient = redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", config.RedisHost, config.RedisPort),
 		DB:   0,
 	})
+
+	throttleCh = make(chan bool, apiThrottleBucket)
+
+	go func() {
+		for {
+			throttleCh <- true
+			time.Sleep(apiInterval)
+		}
+	}()
 }
 
 var zeroFactions = model.Factions{}
@@ -129,6 +146,15 @@ func fetchFromEDSM(systemName string) (api.SystemFactions, ApiStatus, error) {
 	params.Add("showHistory", "1")
 
 	url := "https://www.edsm.net/api-system-v1/factions?" + params.Encode()
+
+	timeoutCh := time.After(apiTimeout)
+	select {
+	case <-throttleCh:
+		break
+	case <-timeoutCh:
+		return zeroSystemFactions, Timeout, nil
+	}
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return zeroSystemFactions, Error, err
