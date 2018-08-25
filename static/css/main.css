@@ -1,0 +1,13 @@
+@import "/static/css/base.css";
+
+input {
+    color: #ff6f00;
+    background-color: #140f09;
+    border: solid 1px #ff6f00;
+}
+
+input[type="text"] {
+    height:1.8em;
+    width: 15em;
+    padding: 0.1em;
+}
