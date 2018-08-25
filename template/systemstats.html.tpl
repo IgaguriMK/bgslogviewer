@@ -17,6 +17,10 @@
 
 <a class="top" href="/">[TOP]</a>
 
+<p>
+Data source: <a href="https://www.edsm.net/">Elite Dangerous Star Map</a>
+</p>
+
 <h1>{{.Name}}</h1>
 
 <h2>Factions Overview</h2>
