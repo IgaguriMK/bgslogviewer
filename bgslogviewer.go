@@ -52,11 +52,23 @@ func init() {
 func main() {
 	r := gin.Default()
 
-	r.StaticFile("/", "main.html")
-	r.StaticFile("/index.html", "main.html")
+	r.StaticFile("/", "./static/main.html")
+	r.StaticFile("/index.html", "./static/main.html")
+
 	r.GET("/system", statPage)
 
-	r.Static("/static", "./static")
+	r.Static("/static/css", "./static/css")
+
+	r.StaticFile("/android-chrome-192x192.png", "./static/favicon/android-chrome-192x192.png")
+	r.StaticFile("/android-chrome-512x512.png", "./static/favicon/android-chrome-512x512.png")
+	r.StaticFile("/apple-touch-icon.png", "./static/favicon/apple-touch-icon.png")
+	r.StaticFile("/browserconfig.xml", "./static/favicon/browserconfig.xml")
+	r.StaticFile("/favicon.ico", "./static/favicon/favicon.ico")
+	r.StaticFile("/favicon-16x16.png", "./static/favicon/favicon-16x16.png")
+	r.StaticFile("/favicon-32x32.png", "./static/favicon/favicon-32x32.png")
+	r.StaticFile("/mstile-150x150.png", "./static/favicon/mstile-150x150.png")
+	r.StaticFile("/safari-pinned-tab.svg", "./static/favicon/safari-pinned-tab.svg")
+	r.StaticFile("/site.webmanifest", "./static/favicon/site.webmanifest")
 
 	err := r.Run(":8080")
 	if err != nil {
