@@ -1,5 +1,5 @@
 bgslogviewer:
-  image: "bgslogviewer:0.1.1"
+  image: "bgslogviewer:0.1.2"
   ports:
     - "8080:8080"
   links:

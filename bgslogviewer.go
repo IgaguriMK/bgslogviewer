@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,8 @@ import (
 )
 
 const (
-	timeFormat = "2006-01-02 (15)"
+	timeFormat      = "2006-01-02 (15)"
+	systemNameLimit = 64
 )
 
 const (
@@ -50,21 +52,28 @@ func init() {
 func main() {
 	r := gin.Default()
 
-	r.GET("/", mainPage)
-	r.GET("/index.html", mainPage)
+	r.StaticFile("/", "./static/main.html")
+	r.StaticFile("/index.html", "./static/main.html")
+
 	r.GET("/system", statPage)
+
+	r.Static("/static/css", "./static/css")
+
+	r.StaticFile("/android-chrome-192x192.png", "./static/favicon/android-chrome-192x192.png")
+	r.StaticFile("/android-chrome-512x512.png", "./static/favicon/android-chrome-512x512.png")
+	r.StaticFile("/apple-touch-icon.png", "./static/favicon/apple-touch-icon.png")
+	r.StaticFile("/browserconfig.xml", "./static/favicon/browserconfig.xml")
+	r.StaticFile("/favicon.ico", "./static/favicon/favicon.ico")
+	r.StaticFile("/favicon-16x16.png", "./static/favicon/favicon-16x16.png")
+	r.StaticFile("/favicon-32x32.png", "./static/favicon/favicon-32x32.png")
+	r.StaticFile("/mstile-150x150.png", "./static/favicon/mstile-150x150.png")
+	r.StaticFile("/safari-pinned-tab.svg", "./static/favicon/safari-pinned-tab.svg")
+	r.StaticFile("/site.webmanifest", "./static/favicon/site.webmanifest")
 
 	err := r.Run(":8080")
 	if err != nil {
 		log.Fatal("[FATAL] Can't execute gin server: ", err)
 	}
-}
-
-func mainPage(c *gin.Context) {
-	commonHeader(c)
-
-	c.Status(200)
-	c.File("static/main.html")
 }
 
 func statPage(c *gin.Context) {
@@ -81,7 +90,7 @@ func statPage(c *gin.Context) {
 
 	commonHeader(c)
 
-	if systemName == "" {
+	if systemName == "" || len(systemName) > systemNameLimit {
 		c.String(404, "Invalid query")
 		pf.End(404)
 		return
@@ -104,6 +113,15 @@ func statPage(c *gin.Context) {
 	case apiCaller.Invalid:
 		c.String(404, "Invalid request")
 		pf.End(404)
+		return
+	}
+
+	if systemName != v.Name {
+		params := url.Values{}
+		params.Add("q", v.Name)
+		u := "/system?" + params.Encode()
+
+		c.Redirect(301, u)
 		return
 	}
 

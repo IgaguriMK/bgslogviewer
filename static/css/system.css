@@ -1,0 +1,25 @@
+@import "/static/css/base.css";
+
+table {
+    margin-left: 2em;
+    margin-right: 2em;
+    background-color: #1b1714;
+}
+
+th,td {
+    margin: 0.2em 1em;
+    padding: 0.2em 0.5em;
+}
+
+th {
+    background-color: #ff6f00;
+    color: #1b1714;
+}
+
+td.stateValid {
+    background-color: #2e1b0e;
+}
+
+td.stateInvalid {
+    background-color: #140f09;
+}

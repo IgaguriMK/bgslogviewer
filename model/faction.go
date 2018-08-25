@@ -70,11 +70,15 @@ func factionFromApi(apiFaction api.Faction) Faction {
 	faction.Name = apiFaction.Name
 
 	faction.NewestStates = States{
-		Date:       apiFaction.LastUpdate,
-		Influence:  apiFaction.Influence,
-		Current:    apiFaction.State,
-		Pending:    fromApiStateSlice(apiFaction.PendingStates),
-		Recovering: fromApiStateSlice(apiFaction.RecoveringStates),
+		Date:            apiFaction.LastUpdate,
+		Influence:       apiFaction.Influence,
+		Current:         apiFaction.State,
+		Pending:         fromApiStateSlice(apiFaction.PendingStates),
+		Recovering:      fromApiStateSlice(apiFaction.RecoveringStates),
+		ValidInfluence:  true,
+		ValidCurrent:    true,
+		ValidPending:    true,
+		ValidRecovering: true,
 	}
 
 	history := make(map[int64]*States)
@@ -86,13 +90,15 @@ func factionFromApi(apiFaction api.Faction) Faction {
 
 		if !ok {
 			history[d] = &States{
-				Date:      d,
-				Influence: inf,
+				Date:           d,
+				Influence:      inf,
+				ValidInfluence: true,
 			}
 			continue
 		}
 
 		h.Influence = inf
+		h.ValidInfluence = true
 	}
 
 	for ds, st := range apiFaction.StateHistory {
@@ -101,13 +107,15 @@ func factionFromApi(apiFaction api.Faction) Faction {
 		h, ok := history[d]
 		if !ok {
 			history[d] = &States{
-				Date:    d,
-				Current: st,
+				Date:         d,
+				Current:      st,
+				ValidCurrent: true,
 			}
 			continue
 		}
 
 		h.Current = st
+		h.ValidCurrent = true
 	}
 
 	for ds, st := range apiFaction.PendingStatesHistory {
@@ -116,13 +124,15 @@ func factionFromApi(apiFaction api.Faction) Faction {
 		h, ok := history[d]
 		if !ok {
 			history[d] = &States{
-				Date:    d,
-				Pending: fromApiStateSlice(st),
+				Date:         d,
+				Pending:      fromApiStateSlice(st),
+				ValidPending: true,
 			}
 			continue
 		}
 
 		h.Pending = fromApiStateSlice(st)
+		h.ValidPending = true
 	}
 
 	for ds, st := range apiFaction.RecoveringStatesHistory {
@@ -131,13 +141,15 @@ func factionFromApi(apiFaction api.Faction) Faction {
 		h, ok := history[d]
 		if !ok {
 			history[d] = &States{
-				Date:       d,
-				Recovering: fromApiStateSlice(st),
+				Date:            d,
+				Recovering:      fromApiStateSlice(st),
+				ValidRecovering: true,
 			}
 			continue
 		}
 
 		h.Recovering = fromApiStateSlice(st)
+		h.ValidRecovering = true
 	}
 
 	ds := make([]int64, 0, len(history))
@@ -174,13 +186,17 @@ func (f *Faction) GenStr(loc *time.Location, fmtStr string) {
 }
 
 type States struct {
-	Date         int64   `json:"date"`
-	DateStr      string  `json:"-"`
-	Influence    float64 `json:"influence"`
-	InfluenceStr string  `json:"-"`
-	Current      string  `json:"current"`
-	Pending      []State `json:"pending"`
-	Recovering   []State `json:"recovering"`
+	Date            int64   `json:"date"`
+	DateStr         string  `json:"-"`
+	Influence       float64 `json:"influence"`
+	InfluenceStr    string  `json:"-"`
+	Current         string  `json:"current"`
+	Pending         []State `json:"pending"`
+	Recovering      []State `json:"recovering"`
+	ValidInfluence  bool    `json:"validInfluence"`
+	ValidCurrent    bool    `json:"validCurrent"`
+	ValidPending    bool    `json:"validPending"`
+	ValidRecovering bool    `json:"validRecovering"`
 }
 
 func (s *States) GenStr(loc *time.Location, fmtStr string) {
