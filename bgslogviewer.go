@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,8 @@ import (
 )
 
 const (
-	timeFormat = "2006-01-02 (15)"
+	timeFormat      = "2006-01-02 (15)"
+	systemNameLimit = 64
 )
 
 const (
@@ -76,7 +78,7 @@ func statPage(c *gin.Context) {
 
 	commonHeader(c)
 
-	if systemName == "" {
+	if systemName == "" || len(systemName) > systemNameLimit {
 		c.String(404, "Invalid query")
 		pf.End(404)
 		return
@@ -99,6 +101,15 @@ func statPage(c *gin.Context) {
 	case apiCaller.Invalid:
 		c.String(404, "Invalid request")
 		pf.End(404)
+		return
+	}
+
+	if systemName != v.Name {
+		params := url.Values{}
+		params.Add("q", v.Name)
+		u := "/system?" + params.Encode()
+
+		c.Redirect(301, u)
 		return
 	}
 
