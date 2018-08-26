@@ -28,7 +28,7 @@ dep:
 
 
 .PHONY: dr
-dr: docker-build docker-run
+dr: clean docker-build docker-run
 
 .PHONY: docker-build
 docker-build: build-linux
@@ -43,3 +43,4 @@ docker-run:
 clean:
 	- rm bgslogviewer
 	- rm bgslogviewer.exe
+	- docker-compose down

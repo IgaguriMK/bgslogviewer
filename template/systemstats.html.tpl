@@ -1,20 +1,34 @@
 <html>
 <header>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="/static/css/system.css">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#2b5797">
+<meta name="theme-color" content="#000000">
+
 <title>{{.Name}} -- BGS Log Viewer</title>
 </header>
 <body>
 
 <a class="top" href="/">[TOP]</a>
 
+<p>
+Data source: <a href="https://www.edsm.net/">Elite Dangerous Star Map</a>
+</p>
+
 <h1>{{.Name}}</h1>
 
-<h2>概況</h2>
+<h2>Factions Overview</h2>
 <table>
-	<tr> <th>名前</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> <th>最終更新</th> </tr>
+	<tr> <th>Name</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> <th>Last Update</th> </tr>
 {{range $i, $f := .Factions}}
 	<tr class=".{{oddEven $i}}">
-		<td>{{$f.Name}}</td>
+		<th>{{$f.Name}}</th>
 		{{with $f.NewestStates}}
 			<td>{{.InfluenceStr}}</td>
 			<td>{{.Current}}</td>
@@ -26,20 +40,20 @@
 {{end}}
 </table>
 
-<h2>履歴</h2>
+<h2>Histories</h2>
 {{range .Factions}}
 
 <h3>{{.Name}}</h3>
 
-<table>
-	<tr> <th>日時</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> </tr>
+<table class="stateHistory">
+	<tr> <th>Date</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> </tr>
 {{range $i, $h := .History}}
 	<tr class=".{{oddEven $i}}">
-		<td>{{$h.DateStr}}</td>
-		<td>{{$h.InfluenceStr}}</td>
-		<td>{{$h.Current}}</td>
-		<td>{{range $h.Recovering}}{{.State}}{{.TrendStr}} {{end}} </td>
-		<td>{{range $h.Pending}}{{.State}}{{.TrendStr}} {{end}} </td>
+		<th>{{$h.DateStr}}</th>
+		<td class="{{if $h.ValidInfluence}}stateValid{{else}}stateInvalid{{end}}">{{$h.InfluenceStr}}</td>
+		<td class="{{if $h.ValidCurrent}}stateValid{{else}}stateInvalid{{end}}">{{$h.Current}}</td>
+		<td class="{{if $h.ValidRecovering}}stateValid{{else}}stateInvalid{{end}}">{{range $h.Recovering}}{{.State}}{{.TrendStr}}{{end}} </td>
+		<td class="{{if $h.ValidPending}}stateValid{{else}}stateInvalid{{end}}">{{range $h.Pending}}{{.State}}{{.TrendStr}}{{end}} </td>
 	</tr>
 {{end}}
 </table>

@@ -1,0 +1,17 @@
+body {
+    padding: 1em;
+    color: #ff6f00;
+    background-color: #080a09;
+}
+
+a {
+    color: #aaaaaa;
+}
+
+a:visited {
+    color: #888888;
+}
+
+a:hover {
+    color: #ffffff;
+}
