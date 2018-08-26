@@ -70,6 +70,8 @@ func main() {
 	r.StaticFile("/safari-pinned-tab.svg", "./static/favicon/safari-pinned-tab.svg")
 	r.StaticFile("/site.webmanifest", "./static/favicon/site.webmanifest")
 
+	r.StaticFile("/robots.txt", "./static/misc/robots.txt")
+
 	err := r.Run(":8080")
 	if err != nil {
 		log.Fatal("[FATAL] Can't execute gin server: ", err)
