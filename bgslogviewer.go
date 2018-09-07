@@ -67,6 +67,11 @@ func statPage(c *gin.Context) {
 		return
 	}
 
+	if systemName == "" {
+		c.Redirect(301, "/")
+		return
+	}
+
 	pf.AddParam("q", systemName)
 
 	commonHeader(c)
