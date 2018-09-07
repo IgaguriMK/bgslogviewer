@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"net/url"
@@ -14,10 +13,10 @@ import (
 	"github.com/IgaguriMK/bgslogviewer/apiCaller"
 	"github.com/IgaguriMK/bgslogviewer/config"
 	"github.com/IgaguriMK/bgslogviewer/prof"
+	"github.com/IgaguriMK/bgslogviewer/view"
 )
 
 const (
-	timeFormat      = "2006-01-02 (15)"
 	systemNameLimit = 64
 )
 
@@ -28,28 +27,9 @@ const (
 	cacheCdnMax   = 6 * time.Hour
 )
 
-var mainTemplate *template.Template
-var statTemplate *template.Template
-
-func init() {
-	var err error
-
-	funcs := template.FuncMap{
-		"oddEven": func(n int) string {
-			if (n+1)%2 == 0 {
-				return "even"
-			}
-			return "odd"
-		},
-	}
-
-	statTemplate, err = template.New("systemstats.html.tpl").Funcs(funcs).ParseFiles("template/systemstats.html.tpl")
-	if err != nil {
-		log.Fatal("[FATAL] Failed parse template: ", err)
-	}
-}
-
 func main() {
+	time.Sleep(3 * time.Second)
+
 	r := gin.Default()
 
 	r.StaticFile("/", "./static/main.html")
@@ -58,6 +38,7 @@ func main() {
 	r.GET("/system", statPage)
 
 	r.Static("/static/css", "./static/css")
+	r.Static("/static/img", "./static/img")
 
 	r.StaticFile("/android-chrome-192x192.png", "./static/favicon/android-chrome-192x192.png")
 	r.StaticFile("/android-chrome-512x512.png", "./static/favicon/android-chrome-512x512.png")
@@ -125,13 +106,10 @@ func statPage(c *gin.Context) {
 		return
 	}
 
-	pf.Mark("genStr")
-	v.GenStr(time.UTC, timeFormat)
-
 	pf.Mark("template")
 	body := new(bytes.Buffer)
 
-	err = statTemplate.Execute(body, v)
+	err = view.System(body, v)
 	if err != nil {
 		c.String(500, "Internal error")
 		pf.End(500)
