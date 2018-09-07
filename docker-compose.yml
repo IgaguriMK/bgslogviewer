@@ -1,9 +1,11 @@
 bgslogviewer:
-  image: "bgslogviewer:0.1.3"
+  image: "bgslogviewer:0.1.4"
   ports:
     - "8080:8080"
   links:
     - redis
+  volumes:
+    - "./log:/app/log"
   environment:
     BLV_PROFILE: "false"
     REDIS_HOST: "redis"
