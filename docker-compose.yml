@@ -4,6 +4,8 @@ bgslogviewer:
     - "8080:8080"
   links:
     - redis
+  volumes:
+    - "./log:/app/log"
   environment:
     BLV_PROFILE: "false"
     REDIS_HOST: "redis"
