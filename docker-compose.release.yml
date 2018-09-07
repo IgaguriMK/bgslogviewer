@@ -1,5 +1,5 @@
 bgslogviewer:
-  image: "bgslogviewer:0.1.3"
+  image: "bgslogviewer:0.1.4"
   ports:
     - "8080:8080"
   restart: "unless-stopped"
