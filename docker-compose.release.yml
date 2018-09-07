@@ -5,6 +5,8 @@ bgslogviewer:
   restart: "unless-stopped"
   links:
     - redis
+  volumes:
+    - "./log:/app/log"
   environment:
     GIN_MODE: release
 redis:
