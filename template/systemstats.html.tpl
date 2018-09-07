@@ -11,51 +11,64 @@
 <meta name="msapplication-TileColor" content="#2b5797">
 <meta name="theme-color" content="#000000">
 
-<title>{{.Name}} -- BGS Log Viewer</title>
+<title>{{.SystemName}} -- BGS Log Viewer</title>
 </header>
 <body>
 
 <a class="top" href="/">[TOP]</a>
 
 <p>
-Data source: <a href="https://www.edsm.net/">Elite Dangerous Star Map</a>
+Data source: <a href="https://www.edsm.net/">Elite Dangerous Star Map</a><br>
+Cached at {{.CachedAt}}
 </p>
 
-<h1>{{.Name}}</h1>
+<h1>{{.SystemName}}</h1>
 
 <h2>Factions Overview</h2>
 <table>
-	<tr> <th>Name</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> <th>Last Update</th> </tr>
-{{range $i, $f := .Factions}}
-	<tr class=".{{oddEven $i}}">
-		<th>{{$f.Name}}</th>
-		{{with $f.NewestStates}}
-			<td>{{.InfluenceStr}}</td>
-			<td>{{.Current}}</td>
-			<td>{{range .Recovering}}{{.State}}{{.TrendStr}} {{end}} </td>
-			<td>{{range .Pending}}{{.State}}{{.TrendStr}} {{end}} </td>
-			<td>{{.DateStr}}</td>
-		{{end}}
+	<tr> <th colspan="4">Name</th> <th>Government</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> <th>Last Update</th> </tr>
+{{range .Overview}}
+	<tr>
+		<th class="con_right">{{if .IsControl}}<img width="16" height="16" src="/static/img/control.png">{{end}}</th>
+		<th class="con_right con_left">{{if .IsPF}}<img width="16" height="16" src="/static/img/pf.png">{{end}}</th>
+		<th class="con_right con_left">{{if .HasAllegiance}}<img width="16" height="16" src="{{.AllegianceImg}}">{{end}}</th>
+		<th class="con_left"><a href="#{{.NameHash}}">{{.Name}}</a></th>
+		<td>{{.Government}}</td>
+		<td>{{.Influence}}</td>
+		<td>{{.State}}</td>
+		<td>{{.Recovering}}</td>
+		<td>{{.Pending}}</td>
+		<td>{{.LastUpdate}}</td>
 	</tr>
 {{end}}
 </table>
 
-<h2>Histories</h2>
-{{range .Factions}}
+{{if .RetreatedExists}}
+<h3>Retreated</h3>
 
-<h3>{{.Name}}</h3>
+<ul>
+{{range .Retreated}}
+<li><a href="#{{.NameHash}}">{{.Name}}</a></li>
+{{end}}
+</ul>
+{{end}}
+
+<h2>Histories</h2>
+{{range .History}}
+
+<h3 id="{{.NameHash}}">{{.Name}}</h3>
 
 <table class="stateHistory">
 	<tr> <th>Date</th> <th>Influence</th> <th>State</th> <th>Recovering</th> <th>Pending</th> </tr>
-{{range $i, $h := .History}}
-	<tr class=".{{oddEven $i}}">
-		<th>{{$h.DateStr}}</th>
-		<td class="{{if $h.ValidInfluence}}stateValid{{else}}stateInvalid{{end}}">{{$h.InfluenceStr}}</td>
-		<td class="{{if $h.ValidCurrent}}stateValid{{else}}stateInvalid{{end}}">{{$h.Current}}</td>
-		<td class="{{if $h.ValidRecovering}}stateValid{{else}}stateInvalid{{end}}">{{range $h.Recovering}}{{.State}}{{.TrendStr}}{{end}} </td>
-		<td class="{{if $h.ValidPending}}stateValid{{else}}stateInvalid{{end}}">{{range $h.Pending}}{{.State}}{{.TrendStr}}{{end}} </td>
+	{{range .Records}}
+	<tr>
+		<th>{{.Date}}</th>
+		{{with .Influence}}{{if .IsValid}}<td class="stateValid">{{.Value}}</td>{{else}}<td class="stateInvalid"></td>{{end}}{{end}}
+		{{with .State}}{{if .IsValid}}<td class="stateValid">{{.Value}}</td>{{else}}<td class="stateInvalid"></td>{{end}}{{end}}
+		{{with .Recovering}}{{if .IsValid}}<td class="stateValid">{{.Value}}</td>{{else}}<td class="stateInvalid"></td>{{end}}{{end}}
+		{{with .Pending}}{{if .IsValid}}<td class="stateValid">{{.Value}}</td>{{else}}<td class="stateInvalid"></td>{{end}}{{end}}
 	</tr>
-{{end}}
+	{{end}}
 </table>
 
 {{end}}
