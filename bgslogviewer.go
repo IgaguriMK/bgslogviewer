@@ -3,13 +3,16 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"regexp"
 	"time"
 
-	"github.com/IgaguriMK/bgslogviewer/controller"
+	"github.com/comail/colog"
 	"github.com/gin-gonic/gin"
+
+	"github.com/IgaguriMK/bgslogviewer/controller"
 )
 
 var logCh chan AccessLog
@@ -92,6 +95,26 @@ func startLogSaver() {
 		log.Fatal("alert: can't create log direcrory: ", err)
 	}
 
+	// error.log
+	colog.Register()
+
+	logf, err := os.OpenFile("./log/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal("alert: can't open error.log: ", err)
+	}
+	logw := io.MultiWriter(logf, os.Stderr)
+	colog.SetOutput(logw)
+	if level, ok := os.LookupEnv("LOGLEVEL"); ok {
+		lvl, err := colog.ParseLevel(level)
+		if err != nil {
+			log.Fatalf("alert: invalid LOGLEVEL = %q", level)
+		}
+		colog.SetMinLevel(lvl)
+	} else {
+		colog.SetMinLevel(colog.LInfo)
+	}
+
+	// access.log
 	noLogPatterns := make([]*regexp.Regexp, 0)
 
 	if f, err := os.Open("./conf.d/nolog-agent.txt"); err != nil {

@@ -36,3 +36,7 @@
 [[override]]
   name = "github.com/go-redis/redis"
   version = "6.13.2"
+
+[[override]]
+  name = "github.com/comail/colog"
+  revision = "fba8e7b1f46c3607f09760ce3880066e7ff57c5a"
