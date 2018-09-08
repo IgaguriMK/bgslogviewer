@@ -14,7 +14,7 @@ const (
 	cacheCdnMax   = 6 * time.Hour
 )
 
-func commonHeader(c *gin.Context) {
+func CommonHeader(c *gin.Context) {
 	c.Header("X-XSS=Protection", "1; mode=block")
 	c.Header("X-Frame-Options", "DENY")
 	c.Header("X-Content-Type-Options", "nosniff")

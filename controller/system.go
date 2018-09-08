@@ -45,8 +45,6 @@ func StatPage(c *gin.Context) {
 
 	pf.AddParam("q", systemName)
 
-	commonHeader(c)
-
 	if !checkSystemName(systemName) {
 		c.String(404, "Invalid request")
 		pf.End(404)

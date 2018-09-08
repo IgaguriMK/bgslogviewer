@@ -2,6 +2,11 @@
 
 
 [[projects]]
+  name = "github.com/comail/colog"
+  packages = ["."]
+  revision = "fba8e7b1f46c3607f09760ce3880066e7ff57c5a"
+
+[[projects]]
   branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
@@ -90,6 +95,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6e74773389863bd61362be32da49dbb3cd17732956513b85309f2b358b7a59e8"
+  inputs-digest = "34e86dc79ddea8b19a592af2d62858c04eeed0b84a36bcb80952512927378d56"
   solver-name = "gps-cdcl"
   solver-version = 1
