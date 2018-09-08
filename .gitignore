@@ -4,7 +4,8 @@
 bgslogviewer
 
 # testrun artifacts
-log/
+/conf.d
+/log
 *.log
 
 # dep

@@ -6,7 +6,8 @@ bgslogviewer:
   links:
     - redis
   volumes:
-    - "./log:/app/log"
+    - "/var/log/blv:/app/log"
+    - "./conf.d:/app/conf.d"
   environment:
     GIN_MODE: release
 redis:

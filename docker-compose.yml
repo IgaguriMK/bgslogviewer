@@ -6,6 +6,7 @@ bgslogviewer:
     - redis
   volumes:
     - "./log:/app/log"
+    - "./conf.d:/app/conf.d"
   environment:
     BLV_PROFILE: "false"
     REDIS_HOST: "redis"
