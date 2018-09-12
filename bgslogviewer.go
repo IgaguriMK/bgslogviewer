@@ -29,15 +29,13 @@ func main() {
 		controller.CommonHeader,
 	)
 
+	r.GET("/", controller.MainPage)
 	r.GET("/system", controller.StatPage)
 
 	rs := r.Use(func(c *gin.Context) {
 		c.Header("Cache-Control", "max-age=600, s-maxage=604800")
 		c.Next()
 	})
-
-	rs.StaticFile("/", "./static/main.html")
-	rs.StaticFile("/index.html", "./static/main.html")
 
 	rs.Static("/static/css", "./static/css")
 	rs.Static("/static/img", "./static/img")

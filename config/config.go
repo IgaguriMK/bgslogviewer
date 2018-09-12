@@ -1,15 +1,20 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
 
-var Debug = false
-var BgsUpdate = 16
-var EnableProf = false
-var RedisHost = "redis"
-var RedisPort = 6379
+var (
+	Debug      = false
+	BgsUpdate  = 16
+	EnableProf = false
+	RedisHost  = "redis"
+	RedisPort  = 6379
+	Protocol   = "http"
+	HostName   = ""
+)
 
 func init() {
 
@@ -32,6 +37,20 @@ func init() {
 	if p, ok := getEnvInt("REDIS_PORT"); ok {
 		RedisPort = p
 	}
+
+	if h, ok := getEnvString("BLV_HOSTNAME"); ok {
+		HostName = h
+	} else {
+		panic("must set BLV_HOSTNAME")
+	}
+
+	if p, ok := getEnvString("BLV_PROTO"); ok {
+		Protocol = p
+	}
+}
+
+func BaseUrl() string {
+	return fmt.Sprintf("%s://%s/", Protocol, HostName)
 }
 
 func getEnvInt(key string) (int, bool) {
@@ -60,4 +79,9 @@ func getEnvBool(key string) (bool, bool) {
 	}
 
 	return b, true
+}
+
+func getEnvString(key string) (string, bool) {
+	v, ok := os.LookupEnv(key)
+	return v, ok
 }

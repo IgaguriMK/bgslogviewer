@@ -8,6 +8,8 @@ bgslogviewer:
     - "./log:/app/log"
     - "./conf.d:/app/conf.d"
   environment:
+    BLV_PROTO: "http"
+    BLV_HOSTNAME: "localhost"
     BLV_PROFILE: "false"
     REDIS_HOST: "redis"
     REDIS_PORT: "6379"
