@@ -1,4 +1,4 @@
-<html>
+<html prefix="og: http://ogp.me/ns#">
 <header>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="stylesheet" type="text/css" href="/static/css/system.css">
@@ -9,7 +9,17 @@
 <link rel="manifest" href="/site.webmanifest">
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="msapplication-TileColor" content="#2b5797">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#ff6f00">
+
+{{with .OGP}}
+<meta property="og:site_name" content="BGS Log Viewer" />
+<meta property="og:title" content="{{.Title}}" />
+<meta property="og:type" content="{{.Type}}" />
+<meta property="og:url" content="{{.Url}}" />
+<meta property="og:description" content="{{.Description}}" />
+{{if .HasImage}}<meta property="og:image" content="{{.ImageUrl}}" />{{end}}
+{{end}}
+
 
 <title>{{.SystemName}} -- BGS Log Viewer</title>
 </header>
