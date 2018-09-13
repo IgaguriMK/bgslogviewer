@@ -18,6 +18,15 @@ type Factions struct {
 	FetchedAt          time.Time          `json:"fetchedAt"`
 }
 
+func (fs Factions) Controll() (Faction, bool) {
+	for _, f := range fs.Factions {
+		if f.Name == fs.ControllingFaction.Name {
+			return f, true
+		}
+	}
+	return Faction{}, false
+}
+
 type ControllingFaction struct {
 	Allegiance string `json:"allegiance"`
 	Government string `json:"government"`

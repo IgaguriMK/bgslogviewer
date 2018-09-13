@@ -11,6 +11,16 @@
 <meta name="msapplication-TileColor" content="#2b5797">
 <meta name="theme-color" content="#ff6f00">
 
+{{with .OGP}}
+<meta property="og:site_name" content="BGS Log Viewer" />
+<meta property="og:title" content="{{.Title}}" />
+<meta property="og:type" content="{{.Type}}" />
+<meta property="og:url" content="{{.Url}}" />
+<meta property="og:description" content="{{.Description}}" />
+{{if .HasImage}}<meta property="og:image" content="{{.ImageUrl}}" />{{end}}
+{{end}}
+
+
 <title>{{.SystemName}} -- BGS Log Viewer</title>
 </header>
 <body>

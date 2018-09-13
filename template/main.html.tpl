@@ -15,6 +15,7 @@
 <meta property="og:title" content="{{.Title}}" />
 <meta property="og:type" content="{{.Type}}" />
 <meta property="og:url" content="{{.Url}}" />
+<meta property="og:description" content="{{.Description}}" />
 {{if .HasImage}}<meta property="og:image" content="{{.ImageUrl}}" />{{end}}
 
 <title>BGS Log Viewer</title>

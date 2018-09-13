@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net/url"
 	"strings"
 	"time"
 
+	"github.com/IgaguriMK/bgslogviewer/config"
 	"github.com/IgaguriMK/bgslogviewer/lib"
 	"github.com/IgaguriMK/bgslogviewer/model"
 )
@@ -38,6 +40,7 @@ func System(res *bytes.Buffer, factions model.Factions) error {
 	factions.GenStr(time.UTC, timeFormat)
 
 	values := buildSystemMain(factions)
+	values.OGP = buildOGP(factions)
 
 	err := statTemplate.Execute(res, values)
 	if err != nil {
@@ -47,6 +50,27 @@ func System(res *bytes.Buffer, factions model.Factions) error {
 	return nil
 }
 
+func buildOGP(factions model.Factions) model.OGP {
+	params := url.Values{}
+	params.Add("q", factions.Name)
+
+	descs := make([]string, 0)
+
+	if c, ok := factions.Controll(); ok {
+		descs = append(descs, fmt.Sprintf("Controlling: %s", c.Name))
+		descs = append(descs, fmt.Sprintf("Status: %s", c.NewestStates.Current))
+	}
+
+	descs = append(descs, fmt.Sprintf("%d factions.", len(factions.Factions)))
+
+	return model.OGP{
+		Title:       factions.Name,
+		Type:        "article",
+		Url:         config.BaseUrl() + "system?" + params.Encode(),
+		Description: strings.Join(descs, " | "),
+	}
+}
+
 type SystemMain struct {
 	SystemName      string
 	CachedAt        string
@@ -54,6 +78,7 @@ type SystemMain struct {
 	RetreatedExists bool
 	Retreated       []FactionOverview
 	History         []History
+	OGP             model.OGP
 }
 
 func buildSystemMain(factions model.Factions) SystemMain {

@@ -15,11 +15,12 @@ func MainPage(c *gin.Context) {
 	c.Header("Cache-Control", "max-age=600, s-maxage=604800")
 
 	ogp := model.OGP{
-		Title:    "BGS Log Viewer",
-		Type:     "website",
-		Url:      config.BaseUrl(),
-		HasImage: true,
-		ImageUrl: config.BaseUrl() + "static/img/ogp/icon_83b3f2.png",
+		Title:       "BGS Log Viewer",
+		Type:        "website",
+		Url:         config.BaseUrl(),
+		Description: "A viewer for BGS log.",
+		HasImage:    true,
+		ImageUrl:    config.BaseUrl() + "static/img/ogp/icon_83b3f2.png",
 	}
 
 	body := new(bytes.Buffer)
