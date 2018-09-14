@@ -21,7 +21,7 @@
 {{end}}
 
 
-<title>{{.SystemName}} -- BGS Log Viewer</title>
+<title>{{.SystemName}} - BGS Log Viewer</title>
 </header>
 <body>
 
