@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/comail/colog"
@@ -15,7 +15,8 @@ import (
 )
 
 func main() {
-	startLogSaver()
+	gin.DisableConsoleColor()
+	gin.DefaultWriter = startLogSaver()
 
 	time.Sleep(3 * time.Second)
 
@@ -55,7 +56,7 @@ func main() {
 	}
 }
 
-func startLogSaver() {
+func startLogSaver() io.Writer {
 	err := os.MkdirAll("./log", 0744)
 	if err != nil {
 		log.Fatal("alert: can't create log direcrory: ", err)
@@ -81,32 +82,25 @@ func startLogSaver() {
 	}
 
 	// access.log
-	noLogPatterns := make([]*regexp.Regexp, 0)
-
-	if f, err := os.Open("./conf.d/nolog-agent.txt"); err != nil {
-		log.Println("info: './conf.d/nolog-agent.txt' not found. use empty list.")
-	} else {
-		sc := bufio.NewScanner(f)
+	pr, pw := io.Pipe()
+	go func() {
+		sc := bufio.NewScanner(pr)
 
 		for sc.Scan() {
-			pat := sc.Text()
-			exp, err := regexp.Compile(pat)
+			f, err := os.OpenFile("./log/access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
-				log.Fatalf("alert: invalid agent regexp %q: %v", pat, err)
+				log.Println("error: can't open access.log: ", err)
+				return
 			}
-			noLogPatterns = append(noLogPatterns, exp)
-			log.Printf("debug: add ignored useragent %s", pat)
-		}
 
-		f.Close()
-	}
-}
+			_, err = fmt.Fprintln(f, sc.Text())
+			if err != nil {
+				log.Println("error: access log save error:", err)
+			}
 
-func matchPatterns(str string, exps []*regexp.Regexp) bool {
-	for _, exp := range exps {
-		if exp.MatchString(str) {
-			return true
+			f.Close()
 		}
-	}
-	return false
+	}()
+
+	return pw
 }

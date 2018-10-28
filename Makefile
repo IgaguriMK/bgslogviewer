@@ -43,4 +43,5 @@ docker-run:
 clean:
 	- rm bgslogviewer
 	- rm bgslogviewer.exe
+	- rm log/*
 	- docker-compose down
