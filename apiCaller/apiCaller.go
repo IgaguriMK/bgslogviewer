@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -167,15 +168,41 @@ func fetchFromEDSM(systemName string) (api.SystemFactions, ApiStatus, error) {
 		return zeroSystemFactions, Error, err
 	}
 
-	if bytes.Equal(buf.Bytes(), []byte("{}")) {
+	bs := buf.Bytes()
+
+	if bytes.Equal(bs, []byte("{}")) {
 		return zeroSystemFactions, Invalid, nil
 	}
 
+	bs = apiResultHotfix(bs, systemName)
+
 	var res api.SystemFactions
-	err = json.NewDecoder(buf).Decode(&res)
+	err = json.Unmarshal(bs, &res)
 	if err != nil {
 		return zeroSystemFactions, Error, err
 	}
 
 	return res, Success, nil
+}
+
+var replaceSet = []struct {
+	from []byte
+	to   []byte
+}{
+	{[]byte(`"stateHistory":[]`), []byte(`"stateHistory":{}`)},
+	{[]byte(`"recoveringStatesHistory":[]`), []byte(`"recoveringStatesHistory":{}`)},
+	{[]byte(`"pendingStatesHistory":[]`), []byte(`"pendingStatesHistory":{}`)},
+}
+
+func apiResultHotfix(bs []byte, systemName string) []byte {
+	for _, r := range replaceSet {
+		if bytes.Contains(bs, r.from) {
+			log.Printf("warning: API result contains %q", string(r.from))
+			log.Printf("warning:     while getting %q", systemName)
+
+			bs = bytes.Replace(bs, r.from, r.to, -1)
+		}
+	}
+
+	return bs
 }
