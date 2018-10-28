@@ -1,4 +1,4 @@
-GOLINT_OPTS := -min_confidence 1.0 -set_exit_status
+GOLINT_OPTS := -min_confidence 0.6 -set_exit_status
 
 VERSION   := $(shell cat .version)
 IMAGENAME := bgslogviewer:$(VERSION)
@@ -31,7 +31,7 @@ dep:
 dr: clean docker-build docker-run
 
 .PHONY: docker-build
-docker-build: build-linux
+docker-build: build-linux lint
 	docker build --no-cache -t $(IMAGENAME) .
 
 .PHONY: docker-run

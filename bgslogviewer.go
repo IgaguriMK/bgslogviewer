@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -15,8 +14,6 @@ import (
 	"github.com/IgaguriMK/bgslogviewer/controller"
 )
 
-var logCh chan AccessLog
-
 func main() {
 	startLogSaver()
 
@@ -25,7 +22,6 @@ func main() {
 	e := gin.Default()
 
 	r := e.Use(
-		accessLogger,
 		controller.CommonHeader,
 	)
 
@@ -56,34 +52,6 @@ func main() {
 	err := e.Run(":8080")
 	if err != nil {
 		log.Fatal("[FATAL] Can't execute gin server: ", err)
-	}
-}
-
-type AccessLog struct {
-	Date      string `json:"date"`
-	Method    string `json:"method"`
-	URL       string `json:"url"`
-	Code      int64  `json:"code"`
-	From      string `json:"from"`
-	UserAgent string `json:"useragent"`
-	Duration  int64  `json:"dur_us"`
-}
-
-func accessLogger(c *gin.Context) {
-	start := time.Now()
-
-	c.Next()
-
-	dur := time.Since(start)
-
-	logCh <- AccessLog{
-		Date:      start.Format(time.RFC3339),
-		Method:    c.Request.Method,
-		URL:       c.Request.URL.RequestURI(),
-		Code:      int64(c.Writer.Status()),
-		From:      c.ClientIP(),
-		UserAgent: c.Request.UserAgent(),
-		Duration:  int64(dur / time.Microsecond),
 	}
 }
 
@@ -132,15 +100,6 @@ func startLogSaver() {
 
 		f.Close()
 	}
-
-	logCh = make(chan AccessLog, 8)
-	go func() {
-		for l := range logCh {
-			if !matchPatterns(l.UserAgent, noLogPatterns) {
-				saveLog(l)
-			}
-		}
-	}()
 }
 
 func matchPatterns(str string, exps []*regexp.Regexp) bool {
@@ -150,18 +109,4 @@ func matchPatterns(str string, exps []*regexp.Regexp) bool {
 		}
 	}
 	return false
-}
-
-func saveLog(l AccessLog) {
-	f, err := os.OpenFile("./log/access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println("error: can't open access.log: ", err)
-		return
-	}
-	defer f.Close()
-
-	err = json.NewEncoder(f).Encode(l)
-	if err != nil {
-		log.Println("error: access log save error:", err)
-	}
 }
