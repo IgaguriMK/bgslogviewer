@@ -2,11 +2,10 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/comail/colog"
@@ -15,17 +14,15 @@ import (
 	"github.com/IgaguriMK/bgslogviewer/controller"
 )
 
-var logCh chan AccessLog
-
 func main() {
-	startLogSaver()
+	gin.DisableConsoleColor()
+	gin.DefaultWriter = startLogSaver()
 
 	time.Sleep(3 * time.Second)
 
 	e := gin.Default()
 
 	r := e.Use(
-		accessLogger,
 		controller.CommonHeader,
 	)
 
@@ -59,35 +56,7 @@ func main() {
 	}
 }
 
-type AccessLog struct {
-	Date      string `json:"date"`
-	Method    string `json:"method"`
-	URL       string `json:"url"`
-	Code      int64  `json:"code"`
-	From      string `json:"from"`
-	UserAgent string `json:"useragent"`
-	Duration  int64  `json:"dur_us"`
-}
-
-func accessLogger(c *gin.Context) {
-	start := time.Now()
-
-	c.Next()
-
-	dur := time.Since(start)
-
-	logCh <- AccessLog{
-		Date:      start.Format(time.RFC3339),
-		Method:    c.Request.Method,
-		URL:       c.Request.URL.RequestURI(),
-		Code:      int64(c.Writer.Status()),
-		From:      c.ClientIP(),
-		UserAgent: c.Request.UserAgent(),
-		Duration:  int64(dur / time.Microsecond),
-	}
-}
-
-func startLogSaver() {
+func startLogSaver() io.Writer {
 	err := os.MkdirAll("./log", 0744)
 	if err != nil {
 		log.Fatal("alert: can't create log direcrory: ", err)
@@ -113,55 +82,25 @@ func startLogSaver() {
 	}
 
 	// access.log
-	noLogPatterns := make([]*regexp.Regexp, 0)
-
-	if f, err := os.Open("./conf.d/nolog-agent.txt"); err != nil {
-		log.Println("info: './conf.d/nolog-agent.txt' not found. use empty list.")
-	} else {
-		sc := bufio.NewScanner(f)
+	pr, pw := io.Pipe()
+	go func() {
+		sc := bufio.NewScanner(pr)
 
 		for sc.Scan() {
-			pat := sc.Text()
-			exp, err := regexp.Compile(pat)
+			f, err := os.OpenFile("./log/access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
-				log.Fatalf("alert: invalid agent regexp %q: %v", pat, err)
+				log.Println("error: can't open access.log: ", err)
+				return
 			}
-			noLogPatterns = append(noLogPatterns, exp)
-			log.Printf("debug: add ignored useragent %s", pat)
-		}
 
-		f.Close()
-	}
-
-	logCh = make(chan AccessLog, 8)
-	go func() {
-		for l := range logCh {
-			if !matchPatterns(l.UserAgent, noLogPatterns) {
-				saveLog(l)
+			_, err = fmt.Fprintln(f, sc.Text())
+			if err != nil {
+				log.Println("error: access log save error:", err)
 			}
+
+			f.Close()
 		}
 	}()
-}
 
-func matchPatterns(str string, exps []*regexp.Regexp) bool {
-	for _, exp := range exps {
-		if exp.MatchString(str) {
-			return true
-		}
-	}
-	return false
-}
-
-func saveLog(l AccessLog) {
-	f, err := os.OpenFile("./log/access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println("error: can't open access.log: ", err)
-		return
-	}
-	defer f.Close()
-
-	err = json.NewEncoder(f).Encode(l)
-	if err != nil {
-		log.Println("error: access log save error:", err)
-	}
+	return pw
 }

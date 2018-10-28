@@ -58,6 +58,7 @@ func StatPage(c *gin.Context) {
 		c.String(500, "Internal error")
 		pf.End(500)
 		log.Println("error: fetching data error: ", err)
+		log.Printf("error:     while getting factions at %q", systemName)
 		return
 	}
 
